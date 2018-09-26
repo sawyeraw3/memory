@@ -2,15 +2,14 @@ import React, {Component} from "react";
 import Card from "./card.js";
 
 function getNewCards() {
-  const cardDict = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const cardDict = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   let cards = [];
-  for(let i=0; i<2; i++) {
-    let cardDictCopy = cardDict.slice(0);
-    for(let y=0; y<8; y++) {
-      let index = Math.floor(Math.random() * cardDictCopy.length);
-      cards.push({value: cardDictCopy[index], matched: false, flipped: false})
-      cardDictCopy.splice(index, 1);
-    }
+  let cardDictCopy = cardDict.slice(0);
+  console.log(cardDictCopy);
+  for(let i=0; i<16; i++) {
+    let index = Math.floor(Math.random() * cardDictCopy.length);
+    cards.push({value: cardDictCopy[index], matched: false, flipped: false})
+    cardDictCopy.splice(index, 1);
   }
   return cards;
 }
