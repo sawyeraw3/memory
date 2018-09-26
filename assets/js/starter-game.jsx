@@ -1,47 +1,19 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import _ from 'lodash';
+import React, {Component} from "react";
+import ReactDOM from "react-dom";
+import _ from "lodash";
+import GameController from "./game-controller.js";
+
 
 export default function game_init(root) {
-  ReactDOM.render(<Starter />, root);
+  ReactDOM.render(<MatchingGame />, root);
 }
 
-class Starter extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { left: false };
-  }
-
-  swap(_ev) {
-    let state1 = _.assign({}, this.state, { left: !this.state.left });
-    this.setState(state1);
-  }
-
-  hax(_ev) {
-    alert("hax!");
-  }
-
+class MatchingGame extends Component {
   render() {
-    let button = <div className="column" onMouseMove={this.swap.bind(this)}>
-      <p><button onClick={this.hax.bind(this)}>Click Me</button></p>
-    </div>;
-
-    let blank = <div className="column">
-      <p>Nothing here.</p>
-    </div>;
-
-    if (this.state.left) {
-      return <div className="row">
-        {button}
-        {blank}
-      </div>;
-    }
-    else {
-      return <div className="row">
-        {blank}
-        {button}
-      </div>;
-    }
+    return (
+      <div>
+        <GameController />
+      </div>
+    );
   }
 }
-

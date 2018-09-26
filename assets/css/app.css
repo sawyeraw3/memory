@@ -2,8 +2,21 @@
 
 @import "~milligram/dist/milligram";
 
-.column > p {
-    padding-top: 10ex;
-    text-align: center;
+.Card {
+  width: 5rem;
+  height: 5rem;
+  padding: 1rem;
+  margin: 1rem;
+  border: 1px solid black;
+  text-align: center;
+  background-color: black;
+  font-family: Courier;
+  color: #880800;
+}
+.Card--flipped {
+  background-color: gray;
+}
+.Card--matched {
+  background-color: green;
 }
 
