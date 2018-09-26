@@ -5,7 +5,6 @@ function getNewCards() {
   const cardDict = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   let cards = [];
   let cardDictCopy = cardDict.slice(0);
-  console.log(cardDictCopy);
   for(let i=0; i<16; i++) {
     let index = Math.floor(Math.random() * cardDictCopy.length);
     cards.push({value: cardDictCopy[index], matched: false, flipped: false})
