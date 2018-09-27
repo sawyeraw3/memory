@@ -9,7 +9,7 @@
   padding: 10px;
 }
 
-.Header {
+.GameHeader, .ClickCountHeader {
   font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
   color: DarkBlue;
 }  
@@ -19,17 +19,21 @@
   height: 7rem;
   padding: 4px;
   margin: 4px;
-  border: 2px solid Coral;
   background-color: black;
+  border: 2px solid Coral;
+
   font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
   font-size: 3.5rem;
   text-align: center;
   color: DarkBlue;
 }
+
 .Card--flipped {
   background-color: Gainsboro;
-}
-.Card--matched {
-  background-color: Lime;
+  border: 2px solid black;
 }
 
+.Card--matched {
+  background-color: Lime;
+  border: 2px solid DarkBlue;
+}

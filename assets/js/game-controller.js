@@ -108,7 +108,8 @@ export default class GameController extends Component {
     // Render page with cards and reset button
     return (
       <div className="GameController" id="game-controller">
-        <div className="Header"><h1>React Memory Game!</h1></div>
+        <div className="GameHeader"><h1>React Memory Game!</h1></div>
+        <div className="ClickCountHeader"><h3>Clicks: {this.state.clicks}</h3></div>
         {this.createCardRender(this.state.cards)}
         <div id="board">
           <button onClick={this.resetGame}>{resetButtonText}</button>
