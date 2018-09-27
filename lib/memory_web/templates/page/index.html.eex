@@ -1,3 +1,5 @@
+#Referenced code: https://github.com/jdlehman/react-memory-game
+
 <div id="root">
   React app loading...
 </div>
