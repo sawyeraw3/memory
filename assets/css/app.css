@@ -2,21 +2,34 @@
 
 @import "~milligram/dist/milligram";
 
+.GameController {
+  margin: auto;
+  width: 50%;
+  border: 3px;
+  padding: 10px;
+}
+
+.Header {
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  color: DarkBlue;
+}  
+
 .Card {
-  width: 5rem;
-  height: 5rem;
-  padding: 1rem;
-  margin: 1rem;
-  border: 1px solid black;
-  text-align: center;
+  width: 7rem;
+  height: 7rem;
+  padding: 4px;
+  margin: 4px;
+  border: 2px solid Coral;
   background-color: black;
-  font-family: Courier;
-  color: #880800;
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: 3.5rem;
+  text-align: center;
+  color: DarkBlue;
 }
 .Card--flipped {
-  background-color: gray;
+  background-color: Gainsboro;
 }
 .Card--matched {
-  background-color: green;
+  background-color: Lime;
 }
 
