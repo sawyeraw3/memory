@@ -100,7 +100,7 @@ export default class GameController extends Component {
   }
 
   render() {
-    let resetButtonText = "New Deal";
+    let resetButtonText = "New Deal?";
     // Game is over if all pairs have been found
     if (this.state.pairs === this.state.cards.length / 2) {
       resetButtonText = `You won in ${this.state.clicks} clicks! Click to play Again`;

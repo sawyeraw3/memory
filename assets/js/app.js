@@ -11,6 +11,7 @@ import css from "../css/app.css";
 // Import dependencies
 //
 import "phoenix_html";
+import socket from "./socket"
 import $ from "jquery";
 import game_init from "./starter-game";
 
