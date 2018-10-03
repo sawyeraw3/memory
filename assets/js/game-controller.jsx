@@ -3,9 +3,16 @@ import Card from "./card.js";
 import ReactDOM from "react-dom";
 import _ from "lodash";
 
+
+export default function game_init(root, channel) {
+    ReactDOM.render(<Memory channel={channel} />, root);
+}
+
+/*
 export default function game_init(root) {
   ReactDOM.render(<App />, root);
 }
+*/
 
 function getNewCards() {
   const cardDict = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -26,6 +33,13 @@ class App extends Component {
     this.isPair = this.isPair.bind(this);
     this.resetGame = this.resetGame.bind(this);
     this.createCardElement = this.createCardElement.bind(this);
+    
+    this.channel = props.channel;
+    
+    this.channel.join()
+      .receive("ok", resp => { console.log("Joined successfully", resp) })
+      .receive("error", resp => { console.log("Unable to join", resp) })
+
 
     this.state = {
       clicks: 0,
