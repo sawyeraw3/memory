@@ -13,7 +13,8 @@ import css from "../css/app.css";
 import $ from "jquery";
 import "phoenix_html";
 import socket from "./socket"
-import game_init from "./game-controller";
+import game_init from "./memory";
+//import game_init from "./game-controller";
 
 function start() {
   let root = document.getElementById('root');
