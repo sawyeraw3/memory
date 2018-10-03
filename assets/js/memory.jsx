@@ -14,6 +14,8 @@ export default function game_init(root) {
 }
 */
 
+
+
 function getNewCards() {
   const cardDict = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   let cards = [];
@@ -33,7 +35,6 @@ class App extends Component {
     this.isPair = this.isPair.bind(this);
     this.resetGame = this.resetGame.bind(this);
     this.createCardElement = this.createCardElement.bind(this);
-    
     this.channel = vals.channel;
     
     this.channel.join()
@@ -48,6 +49,16 @@ class App extends Component {
       pairs: 0,
       lastCard: null,
     };
+  }
+
+  gotView(v) {
+    console.log("View updated", v);
+    this.setState(v.game);
+  }
+
+  sendFlip(ev) {
+    this.channel.push("flip", {value: 1})
+    .receive("ok", this.gotView.bind(this));
   }
 
   isPair(value, id) {

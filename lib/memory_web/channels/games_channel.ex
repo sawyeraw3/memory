@@ -1,29 +1,43 @@
 defmodule MemoryWeb.GamesChannel do
   use MemoryWeb, :channel
-#  use Phoenix.Channel
+
   alias Memory.Game
+  alias Memory.BackupAgent
 
   def join("games:" <> name, payload, socket) do
     if authorized?(payload) do
-      {:ok, %{"join" => name}, socket}
+      game = BackupAgent.get(name) || Game.new(name)
+      socket = socket
+      |> assign(:game, game)
+      |> assign(:name, name)
+      BackupAgent.put(name, game)
+      {:ok, %{"join" => name, "game" => Game.client_view(game)}, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
   end
 
-  def join("games:lobby", payload, socket) do
-    if authorized?(payload) do
-      {:ok, socket}
-    else
-      {:error, %{reason: "unauthorized"}}
-    end
-  end
-
+#  def join("games:lobby", payload, socket) do
+#    if authorized?(payload) do
+#      {:ok, socket}
+#    else
+#      {:error, %{reason: "unauthorized"}}
+#    end
+#  end
 
   def handle_in("double", payload, socket) do
     xx = String.to_integer(payload["xx"])
     resp = %{  "xx" => xx, "yy" => 2 * xx }
     {:reply, {:doubled, resp}, socket}
+  end
+
+  def handle_in("flip", %{"value" => vv}, socket) do
+    IO.puts("Flip received")
+    name = socket.assigns[:name]
+    game = Game.flip(socket.assigns[:game], vv)
+    socket = assign(socket, :game, game)
+    BackupAgent.put(name, game)
+    {:reply, {:ok, %{ "game" => Game.client_view(game)}}, socket}
   end
 
 

@@ -1,56 +1,49 @@
 defmodule Memory.Game do
-def new do
-    %{
-      word: next_word(),
-      guesses: [],
-    }
-  end
+  use Agent
 
+  @doc """
+  gets the view of the game for the client, with current state
+  """
   def client_view(game) do
-    ws = String.graphemes(game.word)
-    gs = game.guesses
     %{
-      skel: skeleton(ws, gs),
-      goods: Enum.filter(gs, &(Enum.member?(ws, &1))),
-      bads: Enum.filter(gs, &(!Enum.member?(ws, &1))),
-      max: max_guesses(),
+      clicks: 0,
+      cards: [],
+      locked: false,
+      pairs: 0,
+      lastCard: nil,
     }
   end
 
-  def skeleton(word, guesses) do
-    Enum.map word, fn cc ->
-      if Enum.member?(guesses, cc) do
-        cc
-      else
-        "_"
-      end
-    end
+  @doc """
+  Starts agent
+  """
+  def start_link _args do
+    Agent.start_link fn -> Map.new end, name: __MODULE__
   end
 
-  def guess(game, letter) do
-    if letter == "z" do
-      raise "That's not a real letter"
-    end
-
-    gs = game.guesses
-    |> MapSet.new()
-    |> MapSet.put(letter)
-    |> MapSet.to_list
-
-    Map.put(game, :guesses, gs)
+  def flip(game, value) do
+    IO.puts("clicked")
+    #IO.inspect(game)
   end
 
-  def max_guesses do
-    10
+  #TODO
+  def new(id) do
+   Agent.get_and_update __MODULE__, fn lobby ->
+     if not Map.has_key? lobby, id do
+       { :ok, Map.put(lobby, id, initial_state()) }
+     else
+       { :already_exists, lobby }
+     end
+   end
   end
 
-  def next_word do
-    words = ~w(
-      horse snake jazz violin
-      muffin cookie pizza sandwich
-      house train clock
-      parsnip marshmallow
-    )
-    Enum.random(words)
+  defp initial_state do
+    %{
+      :clicks => 0,
+      :cards => [],
+      :locked => false,
+      :pairs => 0,
+      :lastCard => nil,
+    }
   end
 end

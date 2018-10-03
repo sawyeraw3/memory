@@ -132,7 +132,7 @@ class App extends Component {
         <div className="ClickCountHeader"><h3>Clicks: {this.state.clicks}</h3></div>
         {this.createCardRender(this.state.cards)}
         <div id="board">
-          <button onClick={this.resetGame}>{resetButtonText}</button>
+          <button onClick={/*this.resetGame*/this.sendFlip(20)}>{resetButtonText}</button>
         </div>
       </div>
     );
