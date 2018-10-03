@@ -1,5 +1,11 @@
 import React, {Component} from "react";
 import Card from "./card.js";
+import ReactDOM from "react-dom";
+import _ from "lodash";
+
+export default function game_init(root) {
+  ReactDOM.render(<App />, root);
+}
 
 function getNewCards() {
   const cardDict = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -13,7 +19,7 @@ function getNewCards() {
   return cards;
 }
 
-export default class GameController extends Component {
+class App extends Component {
   constructor(vals) {
     super(vals);
     this.createCardRender = this.createCardRender.bind(this);

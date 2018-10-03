@@ -13,7 +13,7 @@ import css from "../css/app.css";
 import "phoenix_html";
 import socket from "./socket"
 import $ from "jquery";
-import game_init from "./starter-game";
+import game_init from "./game-controller";
 
 $(() => {
   let root = $('#root')[0];
