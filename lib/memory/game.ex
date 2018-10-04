@@ -4,13 +4,13 @@ defmodule Memory.Game do
   @doc """
   gets the view of the game for the client, with current state
   """
-  def client_view(game) do
+  def user_view(game) do
     %{
-      clicks: 0,
-      cards: [],
-      locked: false,
-      pairs: 0,
-      lastCard: nil,
+      clicks: game.clicks,
+      cards: game.cards,
+      locked: game.locked,
+      pairs: game.pairs,
+      lastCard: game.lastCard,
     }
   end
 
@@ -22,22 +22,25 @@ defmodule Memory.Game do
   end
 
   def flip(game, value) do
-    IO.puts("clicked")
+    IO.puts("cardValue: ")
+    IO.puts(value)
     #IO.inspect(game)
   end
 
   #TODO
-  def new(id) do
+  def inspect_game(name) do
    Agent.get_and_update __MODULE__, fn lobby ->
-     if not Map.has_key? lobby, id do
-       { :ok, Map.put(lobby, id, initial_state()) }
+     if not Map.has_key? lobby, name do
+       { new_state, Map.put(lobby, name, new_state) }
      else
-       { :already_exists, lobby }
+       {Map.get(lobby, name), lobby}
+       #{ already_exists, lobby }
      end
    end
   end
 
-  defp initial_state do
+  defp new_state do
+#    init = %{
     %{
       :clicks => 0,
       :cards => [],

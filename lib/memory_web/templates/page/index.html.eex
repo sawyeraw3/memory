@@ -1,6 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
 <div class="row">
   <div class="column">
     <h1 id="index-page">Join a Game</h1>
-    <p><a href="/game/lobby">Join "lobby"</a></p>
+    Game name:<br>
+    <input id="gameNameText" type="text" value="">
+    <p><a href="/" id="link">Go to game!</a></p>
   </div>
 </div>
+<script>
+let gameNameText = document.getElementById("gameNameText");
+let link = document.getElementById("link");
+
+gameNameText.onchange = gameNameText.onkeyup = () => {
+  link.href = `http://localhost:4000/game/${gameNameText.value}`;
+  console.log(link.href);
+}
+</script>
+</body>
+</html>

@@ -1,27 +1,25 @@
 import React, {Component} from "react";
-import Card from "./card.js";
 import ReactDOM from "react-dom";
 import _ from "lodash";
-
+import Card from "./card.js";
 
 export default function game_init(root, channel) {
     ReactDOM.render(<App channel={channel} />, root);
 }
 
-function getNewCards(chan) {
+//TODO mov
+function getNewCards() {
   const cardDict = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   let cards = [];
   let cardDictCopy = cardDict.slice(0);
   for(let i=0; i<16; i++) {
     let index = Math.floor(Math.random() * cardDictCopy.length);
-    cards.push({value: cardDictCopy[index], matched: false, flipped: false, channel: chan});
+    cards.push({value: cardDictCopy[index], matched: false, flipped: false})
     cardDictCopy.splice(index, 1);
   }
   return cards;
 }
 
-
-//TODO Give channel to cards when creating
 class App extends Component {
   constructor(vals) {
     super(vals);
@@ -29,35 +27,30 @@ class App extends Component {
     this.isPair = this.isPair.bind(this);
     this.resetGame = this.resetGame.bind(this);
     this.createCardElement = this.createCardElement.bind(this);
-    this.channel = vals.channel;
+
+    this.channel = vals.channel;    
+    this.channel.join()
+      .receive("ok", resp => { console.log("Joined successfully", resp) })
+      .receive("error", resp => { console.log("Unable to join", resp) })
+
 
     this.state = {
       game_id: window.gameName,
       clicks: 0,
-      cards: getNewCards(this.channel),
+      cards: getNewCards(),
       locked: false,
       pairs: 0,
       lastCard: null,
     };
-
-    this.channel.join()
-//      .receive("ok", resp => { console.log("Joined successfully", resp) })
-      .receive("ok", this.gotView.bind(this))
-      .receive("error", resp => { console.log("Unable to join", resp) })
-
   }
-
-
-//TODO handle incoming view, change state accordingly
-  gotView(view) {
-    console.log("new view", view);
-    //this.setState(view.game);
-  }
-
 
 //TODO send reset_game noti to server
   restGame(id) {
 
+  }
+
+  gotView(v) {
+    console.log("View received");
   }
 
   isPair(value, id) {
@@ -92,15 +85,14 @@ class App extends Component {
   }
 
   createCardElement(card, index) {
-    return (
+   return (
         <Card
           key={index}
           id={index}
           matched={card.matched}
           value={card.value}
           isPair={this.isPair}
-          flipped={card.flipped} 
-          channel={card.channel}/>
+          flipped={card.flipped} />
         );
   }
 
@@ -123,7 +115,7 @@ class App extends Component {
   resetGame() {
     this.setState({
       clicks: 0,
-      cards: getNewCards(this.channel),
+      cards: getNewCards(),
       locked: false,
       pairs: 0,
       lastCard: null,
