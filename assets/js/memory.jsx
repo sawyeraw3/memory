@@ -30,7 +30,9 @@ class App extends Component {
     this.resetGame = this.resetGame.bind(this);
     this.createCardElement = this.createCardElement.bind(this);
     this.channel = vals.channel;
-
+    this.channel.on('state_update', msg => {
+      console.log("New State ", msg)
+    })
     this.state = {
       game_id: window.gameName,
       clicks: 0,

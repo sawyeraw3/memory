@@ -10,17 +10,16 @@ export default class Card extends Component {
 
 //TODO send card value (or just card?) on click, send properly formatted message
   sendFlip(ev) {
-    console.log(this.props.value);
     //Client side flip
     if (!this.props.flipped) {
       this.props.isPair(this.props.value, this.props.id);
     }
 
-
+    //TODO move to getting index from array of cards in state
+    let index = this.props.value;//`${this.props.value}`;
     //Channel gotten from memory App
-
-    this.props.channel.push("flip", {value : this.props.value})
-      .receive("ok", resp => { console.log("Click sent", resp) })
+    this.props.channel.push("flip", {cardIndex : index})
+      //.receive("ok", resp => { console.log("Click sent", resp) })
   }
 
   handleClick(e) {

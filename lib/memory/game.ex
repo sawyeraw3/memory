@@ -21,32 +21,37 @@ defmodule Memory.Game do
     Agent.start_link fn -> Map.new end, name: __MODULE__
   end
 
-  def flip(game, value) do
-    IO.puts("cardValue: ")
-    IO.puts(value)
-    #IO.inspect(game)
+  def flip(name, cardValue) do
+    Agent.get_and_update __MODULE__, fn lobby -> 
+      state = lobby[name]
+      {state, Map.put(lobby, name, state)}
+    end
   end
 
   #TODO
   def inspect_game(name) do
-   Agent.get_and_update __MODULE__, fn lobby ->
-     if not Map.has_key? lobby, name do
-       { new_state, Map.put(lobby, name, new_state) }
-     else
-       {Map.get(lobby, name), lobby}
-       #{ already_exists, lobby }
-     end
-   end
+    Agent.get_and_update __MODULE__, fn lobby ->
+      unless Map.has_key? lobby, name do
+        state = clean_state()
+        {state, Map.put(lobby, name, state)}
+      else
+        {Map.get(lobby, name), lobby}
+      end
+    end
   end
 
-  defp new_state do
-#    init = %{
-    %{
+  defp clean_state do
+    init = %{
       :clicks => 0,
       :cards => [],
       :locked => false,
       :pairs => 0,
       :lastCard => nil,
     }
+    #Map.merge(init, (Enum.reduce cards, Map.new, &Map.put(&2, &1, false)))
+  end
+
+  defp cards do
+    vals = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
   end
 end

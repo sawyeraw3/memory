@@ -15,7 +15,6 @@ let link = document.getElementById("link");
 
 gameNameText.onchange = gameNameText.onkeyup = () => {
   link.href = `http://localhost:4000/game/${gameNameText.value}`;
-  console.log(link.href);
 }
 </script>
 </body>
