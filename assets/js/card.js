@@ -23,6 +23,7 @@ export default class Card extends Component {
   }
 
   handleClick(e) {
+    
   }
 
   render() {

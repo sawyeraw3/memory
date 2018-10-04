@@ -29,10 +29,14 @@ class App extends Component {
     this.isPair = this.isPair.bind(this);
     this.resetGame = this.resetGame.bind(this);
     this.createCardElement = this.createCardElement.bind(this);
+    this.updateState = this.updateState.bind(this);
     this.channel = vals.channel;
-    this.channel.on('state_update', msg => {
-      console.log("New State ", msg)
+
+    this.channel.on('state_update', state_update => {
+      this.updateState(state_update);
+      console.log("New State ", state_update)
     })
+    
     this.state = {
       game_id: window.gameName,
       clicks: 0,
@@ -50,10 +54,27 @@ class App extends Component {
   }
 
 
+  updateState(new_state) {
+    this.state = {
+      game_id: window.gameName,
+      clicks: new_state.clicks,
+
+
+      //TODO need to create elixir card object
+      //cards: new_state.cards,
+
+      cards: this.state.cards,
+      locked: new_state.locked,
+      pairs: new_state.pairs,
+      lastCard: new_state.lastCard,
+    };
+  }
+
+
 //TODO handle incoming view, change state accordingly
-  gotView(view) {
-    console.log("new view", view);
-    //this.setState(view.game);
+  gotView(game_state) {
+    console.log("new view", game_state);
+    this.updateState(game_state);
   }
 
 
@@ -143,6 +164,7 @@ class App extends Component {
       <div className="GameController" id="game-controller">
         <div className="GameHeader"><h1>React Memory Game!</h1></div>
         <div className="ClickCountHeader"><h3>Clicks: {this.state.clicks}</h3></div>
+        //TODO move card rendering to elixir
         {this.createCardRender(this.state.cards)}
         <div id="board">
           <button onClick={this.resetGame}>{resetButtonText}</button>
