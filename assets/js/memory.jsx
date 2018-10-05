@@ -78,6 +78,8 @@ class App extends Component {
 
   }
 
+    
+    //Leftover from old client-side state implementation, using as reference
   isPair(value, id) {
     if (this.state.locked) {
       return;
