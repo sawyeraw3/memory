@@ -4,7 +4,6 @@ import React, {Component} from "react";
 export default class Card extends Component {
   constructor(props) {
     super(props);
-    this.handleClick = this.handleClick.bind(this);
     this.sendFlip = this.sendFlip.bind(this);
   }
 
@@ -19,17 +18,11 @@ export default class Card extends Component {
     let index = this.props.value;//`${this.props.value}`;
     //Channel gotten from memory App
     this.props.channel.push("flip", {cardIndex : index})
-      //.receive("ok", resp => { console.log("Click sent", resp) })
-  }
-
-  handleClick(e) {
-    
   }
 
   render() {
     let cardValue = this.props.flipped ? this.props.value : "";
     return (
-//      <div className={`Card ${this.props.flipped ? "Card--flipped" : ""} ${this.props.matched ? "Card--matched" : ""}=${this.sendFlip.bind(this)}`}>
       <div className={`Card ${this.props.flipped ? "Card--flipped" : ""} ${this.props.matched ? "Card--matched" : ""}`} onClick={this.sendFlip}>
         {cardValue}
       </div>

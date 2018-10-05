@@ -37,17 +37,16 @@ class App extends Component {
       console.log("New State ", state_update)
     })
     
-    this.state = {
+    /*this.state = {
       game_id: window.gameName,
       clicks: 0,
       cards: getNewCards(this.channel),
       locked: false,
       pairs: 0,
       lastCard: null,
-    };
+    };*/
 
     this.channel.join()
-//      .receive("ok", resp => { console.log("Joined successfully", resp) })
       .receive("ok", this.gotView.bind(this))
       .receive("error", resp => { console.log("Unable to join", resp) })
 
@@ -55,19 +54,20 @@ class App extends Component {
 
 
   updateState(new_state) {
+    new_state.cards.forEach((card) => card.channel = this.channel);
     this.state = {
       game_id: window.gameName,
       clicks: new_state.clicks,
 
+      //TODO need to create elixir card object, replace reference to cards below
+      cards: new_state.cards,
 
-      //TODO need to create elixir card object
-      //cards: new_state.cards,
-
-      cards: this.state.cards,
+      //cards: this.state.cards,
       locked: new_state.locked,
       pairs: new_state.pairs,
       lastCard: new_state.lastCard,
     };
+    this.setState(this.state);
   }
 
 
@@ -120,13 +120,15 @@ class App extends Component {
           key={index}
           id={index}
           matched={card.matched}
-          value={card.value}
+          value={String.fromCharCode(card.value)}
           isPair={this.isPair}
           flipped={card.flipped} 
           channel={card.channel}/>
         );
   }
 
+
+  //TODO create render from incoming state (parse map)
   // Create all card objects to be rendered on the page
   createCardRender(cards) {
     let index = 0;
@@ -164,7 +166,6 @@ class App extends Component {
       <div className="GameController" id="game-controller">
         <div className="GameHeader"><h1>React Memory Game!</h1></div>
         <div className="ClickCountHeader"><h3>Clicks: {this.state.clicks}</h3></div>
-        //TODO move card rendering to elixir
         {this.createCardRender(this.state.cards)}
         <div id="board">
           <button onClick={this.resetGame}>{resetButtonText}</button>
