@@ -37,14 +37,14 @@ class App extends Component {
       console.log("New State ", state_update)
     })
     
-    /*this.state = {
+    this.state = {
       game_id: window.gameName,
       clicks: 0,
       cards: getNewCards(this.channel),
       locked: false,
       pairs: 0,
       lastCard: null,
-    };*/
+    };
 
     this.channel.join()
       .receive("ok", this.gotView.bind(this))
@@ -52,9 +52,10 @@ class App extends Component {
 
   }
 
-
   updateState(new_state) {
+    
     new_state.cards.forEach((card) => card.channel = this.channel);
+    
     this.state = {
       game_id: window.gameName,
       clicks: new_state.clicks,
@@ -62,7 +63,6 @@ class App extends Component {
       //TODO need to create elixir card object, replace reference to cards below
       cards: new_state.cards,
 
-      //cards: this.state.cards,
       locked: new_state.locked,
       pairs: new_state.pairs,
       lastCard: new_state.lastCard,
@@ -158,14 +158,20 @@ class App extends Component {
   render() {
     let resetButtonText = "New Deal?";
     // Game is over if all pairs have been found
+    
+
     if (this.state.pairs === this.state.cards.length / 2) {
       resetButtonText = `You won in ${this.state.clicks} clicks! Click to play Again`;
     }
+    
+
     // Render page with cards and reset button
     return (
       <div className="GameController" id="game-controller">
         <div className="GameHeader"><h1>React Memory Game!</h1></div>
+        
         <div className="ClickCountHeader"><h3>Clicks: {this.state.clicks}</h3></div>
+        
         {this.createCardRender(this.state.cards)}
         <div id="board">
           <button onClick={this.resetGame}>{resetButtonText}</button>
