@@ -7,15 +7,10 @@ export default class Card extends Component {
     this.sendFlip = this.sendFlip.bind(this);
   }
 
-//TODO send card value (or just card?) on click, send properly formatted message
   sendFlip(ev) {
-    //Client side flip
-    /*if (!this.props.flipped) {
-      this.props.isPair(this.props.value, this.props.id);
-    }*/
-    
-    //let card = this.props;
 
+
+    //Strip card of channel
     let c = [0, {
       value: this.props.value,
       matched: this.props.matched,
@@ -27,7 +22,6 @@ export default class Card extends Component {
     console.log(`card to send: ${c}`);
     //Channel gotten from memory App
     this.props.channel.push("flip", {flipped_card : c})
-    //this.props.channel.push("flip", {flipped_card : card})
   }
 
   render() {

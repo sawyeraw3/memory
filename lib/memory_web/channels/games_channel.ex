@@ -13,7 +13,6 @@ defmodule MemoryWeb.GamesChannel do
   def handle_in("flip", %{"flipped_card" => card}, socket) do
     "games:" <> name = socket.topic
     lobby = Game.flip(name, card)
-
     BackupAgent.put(name, lobby)
     new_view_state = lobby[name]
     broadcast! socket, "state_update", new_view_state

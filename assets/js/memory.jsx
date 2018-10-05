@@ -20,8 +20,6 @@ function getNewCards(chan) {
   return cards;
 }
 
-
-//TODO Give channel to cards when creating
 class App extends Component {
   constructor(vals) {
     super(vals);
@@ -70,16 +68,13 @@ class App extends Component {
     this.setState(this.state);
   }
 
-
-//TODO handle incoming view, change state accordingly
   gotView(game_state) {
     console.log("new view", game_state);
     this.updateState(game_state);
   }
 
 
-//TODO send reset_game noti to server
-  restGame(id) {
+  restGame(name) {
 
   }
 
@@ -127,9 +122,6 @@ class App extends Component {
         );
   }
 
-
-  //TODO create render from incoming state (parse map)
-  // Create all card objects to be rendered on the page
   createCardRender(cards) {
     let index = 0;
     let acc = [];
