@@ -1,142 +1,162 @@
 defmodule Memory.Game do
-  use Agent
 
-  @doc """
-  gets the view of the game for the client, with current state
-  """
-
-
-  def user_view(game) do
-    %{
-      clicks: game.clicks,
-      cards: game.cards,
-      locked: game.locked,
-      pairs: game.pairs,
-      lastCard: game.lastCard,
-    }
+  def new do
+    initializeTiles = Enum.shuffle([
+        %{letter: "A", index: 0, tileStatus: "notFlipped"},
+        %{letter: "A", index: 1, tileStatus: "notFlipped"},
+        %{letter: "B", index: 2, tileStatus: "notFlipped"},
+        %{letter: "B", index: 3, tileStatus: "notFlipped"},
+        %{letter: "C", index: 4, tileStatus: "notFlipped"},
+        %{letter: "C", index: 5, tileStatus: "notFlipped"},
+        %{letter: "D", index: 6, tileStatus: "notFlipped"},
+        %{letter: "D", index: 7, tileStatus: "notFlipped"},
+        %{letter: "E", index: 8, tileStatus: "notFlipped"},
+        %{letter: "E", index: 9, tileStatus: "notFlipped"},
+        %{letter: "F", index: 10, tileStatus: "notFlipped"},
+        %{letter: "F", index: 11, tileStatus: "notFlipped"},
+        %{letter: "G", index: 12, tileStatus: "notFlipped"},
+        %{letter: "G", index: 13, tileStatus: "notFlipped"},
+        %{letter: "H", index: 14, tileStatus: "notFlipped"},
+        %{letter: "H", index: 15, tileStatus: "notFlipped"},
+     ])
+   %{
+     tiles: initializeTiles,
+     clicks: 0,
+     matchedTiles: 0,
+     selectedTile1: nil,
+     selectedTile2: nil,
+     players: %{}
+   }
   end
 
-  @doc """
-  Starts agent
-  """
-  def start_link _args do
-    Agent.start_link fn -> Map.new end, name: __MODULE__
-  end
-
-  def flip(name, card) do
-    Agent.get_and_update __MODULE__, fn lobby -> 
-      state = lobby[name]
-      clickCount = state[:clicks] + 1
-      state = Map.replace state, :clicks, clickCount
-
-      if(!state[:locked]) do        
-        [id | card_map] = card
-        card_map = Enum.at(card_map, 0)
-    
-        cards = state[:cards]
-        if (!card_map[:flipped]) do
-          if (!state[:locked]) do
-            card_map = Map.replace card_map, :flipped, true
-
-            #Update state here?
-            #state = 
-        
-            #If last card isn't null, check match
-            if (!state[:lastCard]) do
-              
-              IO.puts("No last Card")
-              state = Map.replace state, :lastCard, card
-              state = Map.replace state, :locked, false
-              {state, Map.replace(lobby, name, state)}
-            else
-          
-              IO.puts("Compare to lastCard")
-              [last_id | last_map] = state[:lastCard]
-              last_map = Enum.at(last_map, 0)
-          
-              last_card_compare = %{
-                flipped: last_map[:flipped],
-                matched: last_map[:matched],
-                value: last_map[:value],
-              }
-          
-              IO.puts("last")
-              IO.inspect(last_map)
-
-              if(card_map[:value] == last_map[:value]) do
-                #card_map = Map.replace card_map, :matched, true
-                #last_map = Map.replace last_map, :matched, true
-                card_map = Map.replace card_map, :matched, true
-                last_map = Map.replace last_map, :matched, true
-            
-                n_pairs = state[:pairs] + 1
-
-                new_card = [id | card_map]
-
-                before_insert = Enum.take_while(cards, fn(x) -> x != card end)
-                before_insert ++ new_card;
-                after_insert = Enum.take_while(cards, fn(x) -> !(Enum.member?(before_insert, x)) end)
-
-                cards = before_insert ++ after_insert
-                state = Map.replace state, :cards, cards
-
-
-                lastC = [last_id | last_map]
-                state = Map.replace state, :lastCard, lastC
-            
-                state = Map.replace state, :pairs, n_pairs
-                {state, Map.replace(lobby, name, state)}
-              else
-                #Timeout and flip back
-              end
-            end
-          end
-        end
-
-        #lobby = Map.replace(lobby, name, new_s)
-        #lobby
-        {state, Map.replace(lobby, name, state)}
-      else
-        {state, Map.replace(lobby, name, state)}
-      end
+  def new(players) do
+    players = Enum.map players, fn {name, info} ->
+      {name, %{ default_player() | score: info.score || 0 }}
     end
-  end
+    Map.put(new(), :players, Enum.into(players, %{}))
+end
 
-
-  def inspect_game(name) do
-    Agent.get_and_update __MODULE__, fn lobby ->
-      unless Map.has_key? lobby, name do
-        state = clean_state()
-        {state, Map.put(lobby, name, state)}
-      else
-        {Map.get(lobby, name), lobby}
-      end
-    end
-  end
-
-  defp clean_state do
-    init = %{
-      :clicks => 0,
-      :cards => new_cards(),
-      :locked => false,
-      :pairs => 0,
-      :lastCard => false,
-    }
-  end
-
-
-  defp new_card(letter) do
+def default_player() do
     %{
-      value: letter,
-      matched: false,
-      isPair: false,
-      flipped: false
+      score: 0,
+      guesses: MapSet.new(),
+      cooldown: nil,
     }
-  end
+end
 
-  defp new_cards() do
-    vals = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    vals = Enum.shuffle(vals)
-    cards = Enum.map(vals, fn (x) -> new_card(x) end)
-  end
+def get_cd(game, user) do
+    done = (get_in(game.players, [user, :cooldown]) || 0)
+    left = done - :os.system_time(:milli_seconds)
+    max(left, 0)
+end
+
+   def client_view(game, user) do
+     ps = Enum.map game.players, fn {pn, pi} ->
+      %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
+      %{
+       clicks: game.clicks,
+       tiles: game.tiles,
+       matchedTiles: game.matchedTiles,
+       selectedTile1: game.selectedTile1,
+       selectedTile2: game.selectedTile2,
+       players: ps,
+       cooldown: get_cd(game, user),
+     }
+   end
+
+   def matchOrNot(game) do
+       match = game.matchedTiles + 1
+       idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.selectedTile1.index end)
+       idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.selectedTile2.index end)
+     if game.selectedTile1.tileStatus == "flipped" && game.selectedTile2.tileStatus == "flipped" do
+       if game.selectedTile1.letter == game.selectedTile2.letter do
+         newtiles = List.replace_at(game.tiles, idx1,
+       %{
+         letter: Enum.at(game.tiles, idx1).letter,
+         index: Enum.at(game.tiles, idx1).index,
+         tileStatus: "checked",
+        })
+        |>List.replace_at(idx1,
+        %{
+          letter: Enum.at(game.tiles, idx1).letter,
+          index: Enum.at(game.tiles, idx1).index,
+          tileStatus: "checked",
+        })
+        %{
+          tiles: newtiles,
+          clicks: game.clicks,
+          matchedTiles: match,
+          selectedTile1: nil,
+          selectedTile2: nil,
+         }
+       else
+         newtiles = List.replace_at(game.tiles, idx1,
+        %{
+          letter: Enum.at(game.tiles, idx1).letter,
+          index: Enum.at(game.tiles, idx1).index,
+          tileStatus: "notFlipped",
+         })
+         |>List.replace_at(idx1,
+         %{
+           letter: Enum.at(game.tiles, idx1).letter,
+           index: Enum.at(game.tiles, idx1).index,
+           tileStatus: "notFlipped",
+         })
+
+         %{
+           tiles: newtiles,
+           clicks: game.clicks,
+           matchedTiles: game.matchedTiles,
+           selectedTile1: nil,
+           selectedTile2: nil,
+           }
+         end
+     else
+       game
+     end
+   end
+
+
+   def convert_to_atom(params) do
+     for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
+   end
+
+   def checkEquals(game, user, tile) do
+    firstTile = convert_to_atom(tile)
+
+    if firstTile.tileStatus != "checked" && !(game.selectedTile1 != nil && game.selectedTile2 != nil) do
+      secondTile = Map.put(firstTile, :tileStatus, "flipped")
+      trackclick = game.clicks + 1
+      if game.selectedTile1 == nil do
+        idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == secondTile.index end)
+        newtiles = List.replace_at(game.tiles, idx1,
+        %{
+          letter: Enum.at(game.tiles, idx1).letter,
+          index: Enum.at(game.tiles, idx1).index,
+          tileStatus: "flipped",
+          })
+         Map.put(game, :tiles, newtiles)
+         |> Map.put(:clicks, trackclick)
+         |> Map.put(:selectedTile1, secondTile)
+
+      else
+         if firstTile.index != game.selectedTile1.index do
+           idx2 = Enum.find_index(game.tiles, fn(x)-> x.index == secondTile.index end)
+           newtiles = List.replace_at(game.tiles, idx2,
+           %{
+             letter: Enum.at(game.tiles, idx2).letter,
+             index: Enum.at(game.tiles, idx2).index,
+             tileStatus: "flipped",
+           })
+            Map.put(game, :tiles, newtiles)
+            |> Map.put(:clicks, trackclick)
+            |> Map.put(:selectedTile2, secondTile)
+         else
+            game
+         end
+      end
+    else
+      game
+    end
+   end
 end

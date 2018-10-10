@@ -1,39 +1,38 @@
 /* This file is for your main application css. */
-
 @import "~milligram/dist/milligram";
-
-.GameController {
-  margin: auto;
-  width: 50%;
-  border: 3px;
-  padding: 10px;
-}
-
-.GameHeader, .ClickCountHeader {
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
-  color: DarkBlue;
-}  
-
-.Card {
-  width: 7rem;
-  height: 7rem;
-  padding: 4px;
-  margin: 4px;
-  background-color: black;
-  border: 2px solid Coral;
-
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
-  font-size: 3.5rem;
+.tile {
+  width: 70px;
+  height: 70px;
   text-align: center;
-  color: DarkBlue;
+  margin-left: 30px;
+  margin-top: 30px;
+  transform-style: preserve-3d;
+  position: relative;
+  background: purple;
+  font-size: 50px;
+
+}
+.gameboard {
+ width: 400px;
+ height: 400px;
+ display: flex;
+ flex-wrap: wrap;
 }
 
-.Card--flipped {
-  background-color: Gainsboro;
-  border: 2px solid black;
+
+#checkmark {
+  color: green;
 }
 
-.Card--matched {
-  background-color: Lime;
-  border: 2px solid DarkBlue;
+#letters {
+  color: yellow;
+}
+
+#questionmark {
+  color: pink;
+}
+
+.control-panel {
+  margin-top: 50px;
+  margin-left: 30px;
 }
