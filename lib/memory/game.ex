@@ -46,27 +46,30 @@ defmodule Memory.Game do
 
   #Called after game created or found, adds users to game
   def new(game, user) do
-    IO.puts("in new/2")
     if(map_size(game.players) != 2) do
-      players = game.players
-      #players = Enum.map players, fn {user, info} ->
-      #  {user, %{ default_player() | score: info.score || 0 }}
-      #end
-      
-      #generate one of 2 new players
+        
+      #create player to be added
       newP = %{name: user, score: 0, clicks: 0}
+      player = %{user => newP}
+
+      #if(map_size(game.players) < 2) do
+      #   game = Map.put(game, :players, players)
+      # else
+      IO.puts("adding player")
+        players = Map.merge(game.players, player)
+        game = Map.put(game, :players, players)
+        IO.inspect(game.players)
+      #end
+
       game = Map.put(game, :curPlayer, user)
+
+      #players = Enum.map players, fn {user, info} ->
+      #  {user, %{ newP | score: info.score || 0 }}()
+      #end
+      #generate one of 2 new players
       
       #game = Map.put(game, :players, Enum.into(players, %{}))
-      
-      #if we have a user1, add a user2
-      if(map_size(players) == 1) do
-        players = Map.put(players, :user1, newP)
-      else
-        players = Map.put(players, :user2, newP)
-      end
 
-      game = Map.put(game, :players, players)
     else
       #if 2 players playing, add new visitors as observers
       observers = game.observers
@@ -84,7 +87,6 @@ defmodule Memory.Game do
   #      cooldown: nil,
   #    }
   #end
-
 
   #after player cooldown is up, determine state of touched cards, change turn
   def cooled(game, user) do
@@ -167,6 +169,10 @@ defmodule Memory.Game do
   #TODO if called by !curPlayer, return unchanged view
     def client_view(game, user) do     
       IO.inspect(game.curPlayer)
+      
+      if(game.curPlayer != user) do
+        IO.puts("Not users turn")
+      end
       #if(map_size(game.players) == 2) do
       # if(user == game.curPlayer && map_size(game.players) == 2) do
         if(game.timeout) do
@@ -177,7 +183,7 @@ defmodule Memory.Game do
           g = Map.put(game, :timeout, g.timeout)
        
           ps = Enum.map g.players, fn {pn, pi} ->
-          %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
+          %{ name: pn, clicks: pi.clicks, score: pi.score } end
       
           %{
             clicks: g.clicks,
@@ -191,7 +197,7 @@ defmodule Memory.Game do
           }
         else
           ps = Enum.map game.players, fn {pn, pi} ->
-            %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
+            %{ name: pn, clicks: pi.clicks, score: pi.score } end
           %{
             clicks: game.clicks,
             tiles: game.tiles,
