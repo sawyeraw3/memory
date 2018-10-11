@@ -43,9 +43,11 @@ defmodule Memory.Game do
   end
 
   def new(players) do
+    
     players = Enum.map players, fn {name, info} ->
       {name, %{ default_player() | score: info.score || 0 }}
     end
+    
     Map.put(new(), :players, Enum.into(players, %{}))
   end
 
@@ -57,18 +59,65 @@ defmodule Memory.Game do
       }
   end
 
+
+  #after player cooldown is up, determine state of touched cards, change turn
   def cooled(game, user) do
     #TODO change curPlayer, change card appearance if matched, otherwise flip
-    %{
-       clicks: game.clicks,
-       tiles: game.tiles,
-       numOfmatch: game.numOfmatch,
-       card1: nil,
-       card2: nil,
-       players: game.players,
-       timeout: false,
-       #cooldown: get_cd(game, user),
-     }
+    idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card1.index end)
+    idx2 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card2.index end)
+    #determine if match
+    newtiles = game.tiles
+    if game.card1.letter == game.card2.letter do
+      IO.puts("COOLED: match found")
+      newtiles = List.replace_at(game.tiles, idx1,
+      %{
+        letter: Enum.at(game.tiles, idx1).letter,
+        index: Enum.at(game.tiles, idx1).index,
+        tileStatus: "checked",#"checked",
+      }
+      )
+      |>List.replace_at(idx2,
+      %{
+        letter: Enum.at(game.tiles, idx2).letter,
+        index: Enum.at(game.tiles, idx2).index,
+        tileStatus: "checked",#"checked",
+      })
+      %{
+      clicks: game.clicks,
+      tiles: newtiles,
+      numOfmatch: game.numOfmatch,
+      card1: nil,
+      card2: nil,
+      players: game.players,
+      timeout: false,
+      #cooldown: get_cd(game, user),
+      }
+    else
+      IO.puts("COOLED: no match")
+      newtiles = List.replace_at(game.tiles, idx1,
+      %{
+        letter: Enum.at(game.tiles, idx1).letter,
+        index: Enum.at(game.tiles, idx1).index,
+        tileStatus: "notFlipped",
+      }
+      )
+      |>List.replace_at(idx2,
+      %{
+        letter: Enum.at(game.tiles, idx2).letter,
+        index: Enum.at(game.tiles, idx2).index,
+        tileStatus: "notFlipped",
+      })
+      %{
+        clicks: game.clicks,
+        tiles: newtiles,
+        numOfmatch: game.numOfmatch,
+        card1: nil,
+        card2: nil,
+        players: game.players,
+        timeout: false,
+      #cooldown: get_cd(game, user),
+      }
+    end
   end
 
   def get_cd(game, user) do
@@ -79,105 +128,110 @@ defmodule Memory.Game do
 
 
   #TODO if called by !curPlayer, return unchanged view
-   def client_view(game, user) do
-     if(game.timeout) do
-       game = Map.put(game, :timeout, false)
-     end
-     g = matchOrNot(game, user)
-     if(g) do
-       g = Map.put(game, :timeout, g.timeout)
+    def client_view(game, user) do
+      if(game.timeout) do
+        game = Map.put(game, :timeout, false)
+      end
+      g = matchOrNot(game, user)
+      if(g) do
+        g = Map.put(game, :timeout, g.timeout)
        
-       ps = Enum.map g.players, fn {pn, pi} ->
+        ps = Enum.map g.players, fn {pn, pi} ->
         %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
       
-       %{
-         clicks: g.clicks,
-         tiles: g.tiles,
-         numOfmatch: g.numOfmatch,
-         card1: g.card1,
-         card2: g.card2,
-         players: ps,
-         timeout: g.timeout,
-         #cooldown: get_cd(g, user),
-       }
-     else
+        %{
+          clicks: g.clicks,
+          tiles: g.tiles,
+          numOfmatch: g.numOfmatch,
+          card1: g.card1,
+          card2: g.card2,
+          players: ps,
+          timeout: g.timeout,
+          #cooldown: get_cd(g, user),
+        }
+      else
       ps = Enum.map game.players, fn {pn, pi} ->
-        %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
+         %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
       %{
-       clicks: game.clicks,
-       tiles: game.tiles,
-       numOfmatch: game.numOfmatch,
-       card1: game.card1,
-       card2: game.card2,
-       players: ps,
-       timeout: game.timeout,
-       #cooldown: get_cd(game, user),
-     }
-   end
- end
+        clicks: game.clicks,
+        tiles: game.tiles,
+        numOfmatch: game.numOfmatch,
+        card1: game.card1,
+        card2: game.card2,
+        players: ps,
+        timeout: game.timeout,
+        #cooldown: get_cd(game, user),
+      }
+      end
+    end
 
   #TODO change player score if match
   def matchOrNot(game, user) do
-      match = game.numOfmatch + 1
-      if(game.card1 != nil && game.card2 != nil) do
-        #Map.put(game, :timeout, false)
-        idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card1.index end)
-        idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card2.index end)
+    match = game.numOfmatch + 1
+    if(game.card1 != nil && game.card2 != nil) do
+      #Map.put(game, :timeout, false)
+      idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card1.index end)
+      idx2 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card2.index end)
       if game.card1.tileStatus == "flipped" && game.card2.tileStatus == "flipped" do
         if game.card1.letter == game.card2.letter do
+          IO.puts("Match found")
           newtiles = List.replace_at(game.tiles, idx1,
-        %{
-          letter: Enum.at(game.tiles, idx1).letter,
-          index: Enum.at(game.tiles, idx1).index,
-          tileStatus: "checked",
-        })
-        |>List.replace_at(idx1,
-        %{
-          letter: Enum.at(game.tiles, idx1).letter,
-          index: Enum.at(game.tiles, idx1).index,
-          tileStatus: "checked",
-        })
-        %{
-          tiles: newtiles,
-          clicks: game.clicks,
-          numOfmatch: match,
-          card1: nil,
-          card2: nil,
-          timeout: true,
-        }
-       else
-         newtiles = List.replace_at(game.tiles, idx1,
-        %{
-          letter: Enum.at(game.tiles, idx1).letter,
-          index: Enum.at(game.tiles, idx1).index,
-          tileStatus: "notFlipped",
-         })
-         |>List.replace_at(idx1,
-         %{
-           letter: Enum.at(game.tiles, idx1).letter,
-           index: Enum.at(game.tiles, idx1).index,
-           tileStatus: "notFlipped",
-         })
+            %{
+            letter: Enum.at(game.tiles, idx1).letter,
+            index: Enum.at(game.tiles, idx1).index,
+            tileStatus: "flipped",#"checked",
+            }
+          )
+          |>List.replace_at(idx2,
+          %{
+            letter: Enum.at(game.tiles, idx2).letter,
+            index: Enum.at(game.tiles, idx2).index,
+            tileStatus: "flipped",#"checked",
+          })
 
-         %{
-           tiles: newtiles,
-           clicks: game.clicks,
-           numOfmatch: game.numOfmatch,
-           card1: nil,
-           card2: nil,
-           timeout: true,
-           }
-         end
-     else
-       game
-     end
+          %{
+            tiles: newtiles,
+            clicks: game.clicks,
+            numOfmatch: match,
+            card1: nil,
+            card2: nil,
+            timeout: true,
+          }
+        else
+          IO.puts("No match")
+          # newtiles = List.replace_at(game.tiles, idx1,
+          #   %{
+          #     letter: Enum.at(game.tiles, idx1).letter,
+          #     index: Enum.at(game.tiles, idx1).index,
+          #     tileStatus: "notFlipped",
+          #   }
+          # )
+          # |>List.replace_at(idx2,
+          # %{
+          #   letter: Enum.at(game.tiles, idx2).letter,
+          #   index: Enum.at(game.tiles, idx2).index,
+          #   tileStatus: "notFlipped",
+          # })
+
+          %{
+            tiles: game.tiles, #newtiles,
+            clicks: game.clicks,
+            numOfmatch: game.numOfmatch,
+            card1: nil,
+            card2: nil,
+            timeout: true,
+          }
+        end
+      else
+        game
+      end
     end
-   end
+  end
 
 
-   def convert_to_atom(params) do
-     for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
-   end
+  def convert_to_atom(params) do
+    for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
+  end
 
    def replaceTiles(game, user, tile) do
     firstTile = convert_to_atom(tile)
