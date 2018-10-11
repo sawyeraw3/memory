@@ -12,8 +12,12 @@ defmodule Memory.GameServer do
     GenServer.call(__MODULE__, {:view, game, user})
   end
 
-  def checkEquals(game, user, tile) do
-    GenServer.call(__MODULE__, {:checkEquals, game, user, tile})
+  def cooled(game, user) do
+    GenServer.call(__MODULE__, {:cooled, game, user})
+  end
+
+  def replaceTiles(game, user, tile) do
+    GenServer.call(__MODULE__, {:replaceTiles, game, user, tile})
   end
 
   ## Implementations
@@ -26,9 +30,16 @@ defmodule Memory.GameServer do
     {:reply, Game.client_view(gg, user), Map.put(state, game, gg)}
   end
 
-  def handle_call({:checkEquals, game, user, tile}, _from, state) do
+  def handle_call({:replaceTiles, game, user, tile}, _from, state) do
     gg = Map.get(state, game, Game.new)
-    |> Game.checkEquals(user, tile)
+    |> Game.replaceTiles(user, tile)
+    vv = Game.client_view(gg, user)
+    {:reply, vv, Map.put(state, game, gg)}
+  end
+
+  def handle_call({:cooled, game, user}, _from, state) do
+    gg = Map.get(state, game, Game.new)
+    |> Game.cooled(user)
     vv = Game.client_view(gg, user)
     {:reply, vv, Map.put(state, game, gg)}
   end

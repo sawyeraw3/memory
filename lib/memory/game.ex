@@ -19,14 +19,27 @@ defmodule Memory.Game do
         %{letter: "H", index: 14, tileStatus: "notFlipped"},
         %{letter: "H", index: 15, tileStatus: "notFlipped"},
      ])
+   #TODO add curPlayer
    %{
      tiles: initializeTiles,
      clicks: 0,
-     matchedTiles: 0,
-     selectedTile1: nil,
-     selectedTile2: nil,
-     players: %{}
+     numOfmatch: 0,
+     card1: nil,
+     card2: nil,
+     timeout: false,
+     players: %{},
    }
+  end
+
+  def checkTimeout(game) do
+    c1 = game.card1
+    c2 = game.card2
+    if c1 != nil && c2 != nil do
+      true
+      IO.puts("true, in timeout")
+    else
+      false
+    end
   end
 
   def new(players) do
@@ -34,47 +47,89 @@ defmodule Memory.Game do
       {name, %{ default_player() | score: info.score || 0 }}
     end
     Map.put(new(), :players, Enum.into(players, %{}))
-end
+  end
 
-def default_player() do
+  def default_player() do
+      %{
+        score: 0,
+        clicks: 0,
+        cooldown: nil,
+      }
+  end
+
+  def cooled(game, user) do
+    #TODO change curPlayer, change card appearance if matched, otherwise flip
     %{
-      score: 0,
-      guesses: MapSet.new(),
-      cooldown: nil,
-    }
-end
+       clicks: game.clicks,
+       tiles: game.tiles,
+       numOfmatch: game.numOfmatch,
+       card1: nil,
+       card2: nil,
+       players: game.players,
+       timeout: false,
+       #cooldown: get_cd(game, user),
+     }
+  end
 
-def get_cd(game, user) do
-    done = (get_in(game.players, [user, :cooldown]) || 0)
-    left = done - :os.system_time(:milli_seconds)
-    max(left, 0)
-end
+  def get_cd(game, user) do
+      done = (get_in(game.players, [user, :cooldown]) || 0)
+      left = done - :os.system_time(:milli_seconds)
+      max(left, 0)
+  end
 
+
+  #TODO if called by !curPlayer, return unchanged view
    def client_view(game, user) do
-     ps = Enum.map game.players, fn {pn, pi} ->
-      %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
+     if(game.timeout) do
+       game = Map.put(game, :timeout, false)
+     end
+     g = matchOrNot(game, user)
+     if(g) do
+       g = Map.put(game, :timeout, g.timeout)
+       
+       ps = Enum.map g.players, fn {pn, pi} ->
+        %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
+      
+       %{
+         clicks: g.clicks,
+         tiles: g.tiles,
+         numOfmatch: g.numOfmatch,
+         card1: g.card1,
+         card2: g.card2,
+         players: ps,
+         timeout: g.timeout,
+         #cooldown: get_cd(g, user),
+       }
+     else
+      ps = Enum.map game.players, fn {pn, pi} ->
+        %{ name: pn, guesses: Enum.into(pi.guesses, []), score: pi.score } end
       %{
        clicks: game.clicks,
        tiles: game.tiles,
-       matchedTiles: game.matchedTiles,
-       selectedTile1: game.selectedTile1,
-       selectedTile2: game.selectedTile2,
+       numOfmatch: game.numOfmatch,
+       card1: game.card1,
+       card2: game.card2,
        players: ps,
-       cooldown: get_cd(game, user),
+       timeout: game.timeout,
+       #cooldown: get_cd(game, user),
      }
    end
+ end
 
-   def matchOrNot(game) do
-       match = game.matchedTiles + 1
-       idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.selectedTile1.index end)
-       idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.selectedTile2.index end)
-     if game.selectedTile1.tileStatus == "flipped" && game.selectedTile2.tileStatus == "flipped" do
-       if game.selectedTile1.letter == game.selectedTile2.letter do
-         newtiles = List.replace_at(game.tiles, idx1,
-       %{
-         letter: Enum.at(game.tiles, idx1).letter,
-         index: Enum.at(game.tiles, idx1).index,
-         tileStatus: "checked",
+  #TODO change player score if match
+  def matchOrNot(game, user) do
+      match = game.numOfmatch + 1
+      if(game.card1 != nil && game.card2 != nil) do
+        #Map.put(game, :timeout, false)
+        idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card1.index end)
+        idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == game.card2.index end)
+      if game.card1.tileStatus == "flipped" && game.card2.tileStatus == "flipped" do
+        if game.card1.letter == game.card2.letter do
+          newtiles = List.replace_at(game.tiles, idx1,
+        %{
+          letter: Enum.at(game.tiles, idx1).letter,
+          index: Enum.at(game.tiles, idx1).index,
+          tileStatus: "checked",
         })
         |>List.replace_at(idx1,
         %{
@@ -85,10 +140,11 @@ end
         %{
           tiles: newtiles,
           clicks: game.clicks,
-          matchedTiles: match,
-          selectedTile1: nil,
-          selectedTile2: nil,
-         }
+          numOfmatch: match,
+          card1: nil,
+          card2: nil,
+          timeout: true,
+        }
        else
          newtiles = List.replace_at(game.tiles, idx1,
         %{
@@ -106,14 +162,16 @@ end
          %{
            tiles: newtiles,
            clicks: game.clicks,
-           matchedTiles: game.matchedTiles,
-           selectedTile1: nil,
-           selectedTile2: nil,
+           numOfmatch: game.numOfmatch,
+           card1: nil,
+           card2: nil,
+           timeout: true,
            }
          end
      else
        game
      end
+    end
    end
 
 
@@ -121,13 +179,13 @@ end
      for {key, val} <- params, into: %{}, do: {String.to_atom(key), val}
    end
 
-   def checkEquals(game, user, tile) do
+   def replaceTiles(game, user, tile) do
     firstTile = convert_to_atom(tile)
 
-    if firstTile.tileStatus != "checked" && !(game.selectedTile1 != nil && game.selectedTile2 != nil) do
+    if firstTile.tileStatus != "checked" && !(game.card1 != nil && game.card2 != nil) do
       secondTile = Map.put(firstTile, :tileStatus, "flipped")
       trackclick = game.clicks + 1
-      if game.selectedTile1 == nil do
+      if game.card1 == nil do
         idx1 = Enum.find_index(game.tiles, fn(x)-> x.index == secondTile.index end)
         newtiles = List.replace_at(game.tiles, idx1,
         %{
@@ -137,10 +195,10 @@ end
           })
          Map.put(game, :tiles, newtiles)
          |> Map.put(:clicks, trackclick)
-         |> Map.put(:selectedTile1, secondTile)
+         |> Map.put(:card1, secondTile)
 
       else
-         if firstTile.index != game.selectedTile1.index do
+         if firstTile.index != game.card1.index do
            idx2 = Enum.find_index(game.tiles, fn(x)-> x.index == secondTile.index end)
            newtiles = List.replace_at(game.tiles, idx2,
            %{
@@ -150,7 +208,7 @@ end
            })
             Map.put(game, :tiles, newtiles)
             |> Map.put(:clicks, trackclick)
-            |> Map.put(:selectedTile2, secondTile)
+            |> Map.put(:card2, secondTile)
          else
             game
          end
